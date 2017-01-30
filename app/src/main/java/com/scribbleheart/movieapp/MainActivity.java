@@ -17,12 +17,17 @@ import android.widget.TextView;
 
 import com.scribbleheart.movieapp.utils.NetworkUtils;
 
+import org.json.JSONException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 import java.util.Scanner;
+
+import static com.scribbleheart.movieapp.utils.NetworkUtils.parseJsonResults;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -109,13 +114,22 @@ public class MainActivity extends AppCompatActivity {
             }
             String order = params[0];
             URL url = NetworkUtils.buildMovieUrl(order);
+            String jsonResponse = null;
 
             try {
-                String jsonResponse = NetworkUtils.getResponseFromHttpUrl(url);
+                jsonResponse = NetworkUtils.getResponseFromHttpUrl(url);
                 Log.v(TAG, "Response is " + jsonResponse);
-                return null;
 
             } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+
+            try {
+                List<String> strings = parseJsonResults(jsonResponse);
+                Log.d(TAG, "The parsed json response is = " + String.valueOf(strings));
+                return null;
+            } catch (JSONException e) {
                 e.printStackTrace();
                 return null;
             }

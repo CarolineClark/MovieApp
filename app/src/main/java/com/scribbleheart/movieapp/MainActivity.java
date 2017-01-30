@@ -16,6 +16,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.scribbleheart.movieapp.utils.NetworkUtils;
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
 
@@ -52,12 +53,12 @@ public class MainActivity extends AppCompatActivity {
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_movie_view);
         mErrorTextView = (TextView) findViewById(R.id.tv_error_message);
 
-        GridLayoutManager layoutManager = new GridLayoutManager(this, 2);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         mRecyclerView.setLayoutManager(layoutManager);
 
         mRecyclerView.setHasFixedSize(true);
 
-        mMovieAdapter = new MovieAdapter();
+        mMovieAdapter = new MovieAdapter(this);
         mRecyclerView.setAdapter(mMovieAdapter);
 
         mProgressBar = (ProgressBar) findViewById(R.id.pg_loading);
@@ -76,17 +77,16 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    private void loadMovies() {
+        showMovieDataView();
+        new FetchMovieInformation().execute(selectedOrder);
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         item.setChecked(true);
         selectedOrder = item.getTitle().toString();
-        return true;
-    }
-
-    private void loadMovies() {
-        showMovieDataView();
-        new FetchMovieInformation().execute(selectedOrder);
-
+        return super.onOptionsItemSelected(item);
     }
 
     private void showMovieDataView() {
@@ -126,9 +126,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             try {
-                List<String> strings = parseJsonResults(jsonResponse);
-                Log.d(TAG, "The parsed json response is = " + String.valueOf(strings));
-                return null;
+                return parseJsonResults(jsonResponse);
             } catch (JSONException e) {
                 e.printStackTrace();
                 return null;
@@ -136,9 +134,13 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onPostExecute(String[] weatherData) {
+        protected void onPostExecute(String[] movieData) {
             mProgressBar.setVisibility(View.INVISIBLE);
-            showErrorMessage();
+            if (movieData != null) {
+                mMovieAdapter.setMovieImage(movieData);
+            } else {
+                Log.v(TAG, "movie data is null! This is weird");
+            }
         }
     }
 

@@ -12,8 +12,6 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 public class NetworkUtils {
@@ -26,6 +24,7 @@ public class NetworkUtils {
 
     // TODO Enter your key here!
     private static final String USER_API_KEY = "your_api_key";
+    private static final String KEY_POSTER_PATH = "poster_path";
 
     public static URL buildMovieUrl(String order) {
         Uri builtUri = Uri.parse(MOVIE_BASE_URL).buildUpon()
@@ -63,13 +62,19 @@ public class NetworkUtils {
         }
     }
 
-    public static List<String> parseJsonResults(String jsonResponse) throws JSONException {
+    public static String[] parseJsonResults(String jsonResponse) throws JSONException {
         JSONObject jsonObject = new JSONObject(jsonResponse);
         JSONArray resultJsonArray = jsonObject.getJSONArray("results");
 
-        List<String> list = new ArrayList<>();
-        for(int i = 0; i < resultJsonArray.length(); i++){
-            list.add(resultJsonArray.getJSONObject(i).toString());
+//        int length = resultJsonArray.length();
+        int length = 2;
+        String[] list = new String[length];
+        for(int i = 0; i < length; i++) {
+            Log.d(TAG, String.valueOf(i));
+            String poster_id = resultJsonArray.getJSONObject(i).getString(KEY_POSTER_PATH);
+            String imageUrl = constructImageUrl(poster_id);
+            Log.d(TAG, "In networkutils, " + imageUrl);
+            list[i] = imageUrl;
         }
         return list;
     }
@@ -79,11 +84,7 @@ public class NetworkUtils {
     }
 
     public static String constructImageUrl(String imageId) {
-        Uri uri = new Uri.Builder()
-                .appendPath(IMAGE_BASE_URL)
-                .appendPath(getSize())
-                .appendPath(imageId)
-                .build();
+        Uri uri = Uri.parse(IMAGE_BASE_URL + "/" + getSize() + imageId);
         return uri.toString();
     }
 

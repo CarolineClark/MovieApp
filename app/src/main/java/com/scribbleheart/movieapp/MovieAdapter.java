@@ -1,27 +1,39 @@
 package com.scribbleheart.movieapp;
 
+import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapterViewHolder> {
 
     private String[] mImageUrls;
+    private Context context;
 
-    public MovieAdapter() {
+    public MovieAdapter(Context context) {
+        Picasso.with(context).setLoggingEnabled(true);
+        this.context = context;
+    }
 
+    public void setMovieImage(String[] result) {
+        mImageUrls = result;
+        notifyDataSetChanged();
     }
 
     public class MovieAdapterViewHolder extends RecyclerView.ViewHolder {
         public final ImageView mMovieImage;
+//        public final TextView tv;
 
         public MovieAdapterViewHolder(View view) {
             super(view);
             mMovieImage = (ImageView) view.findViewById(R.id.iv_movie_image);
+//            tv = (TextView) view.findViewById(R.id.iv_movie_text);
         }
     }
 
@@ -35,7 +47,12 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
 
     @Override
     public void onBindViewHolder(MovieAdapterViewHolder holder, int position) {
-        Picasso.with(holder.mMovieImage.getContext()).load("http://i.imgur.com/DvpvklR.png").into(holder.mMovieImage);
+        Log.d(TAG, "pictures are being loaded now with the URL " + mImageUrls[position]);
+        String imageUrl = mImageUrls[position];
+//        holder.tv.setText(imageUrl);
+        Picasso.with(context)
+                .load(imageUrl)
+                .into(holder.mMovieImage);
     }
 
     @Override
@@ -45,4 +62,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
         }
         return mImageUrls.length;
     }
+
+    private String TAG = MovieAdapter.class.getSimpleName();
 }

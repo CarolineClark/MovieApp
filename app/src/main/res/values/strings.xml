@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">MovieApp</string>
+    <string name="error_no_network_connectivity">You don\'t have internet connectivity, so cannot load pages</string>
+    <string name="sort_by_popularity">By Popularity</string>
+    <string name="sort_by_newest">By Newest</string>
+    <string name="sort_by_alphabetical">By Alphabetical</string>
 </resources>

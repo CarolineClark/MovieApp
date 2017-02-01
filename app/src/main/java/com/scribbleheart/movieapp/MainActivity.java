@@ -1,5 +1,6 @@
 package com.scribbleheart.movieapp;
 
+import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
@@ -14,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.scribbleheart.movieapp.utils.NetworkUtils;
 import com.squareup.picasso.Picasso;
@@ -30,20 +32,13 @@ import java.util.Scanner;
 
 import static com.scribbleheart.movieapp.utils.NetworkUtils.parseJsonResults;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MovieAdapter.MovieAdapterClickHandler {
 
     private RecyclerView mRecyclerView;
     private TextView mErrorTextView;
     private MovieAdapter mMovieAdapter;
     private ProgressBar mProgressBar;
     private String selectedOrder;
-    private final String MOVIE_BASE_URL = "https://api.themoviedb.org/3/movies";
-    private final String MOVIE_POPULAR_ORDER = "popular";
-    private final String MOVIE_LATEST_ORDER = "latest";
-    private final String API_KEY = "api_key";
-
-//    private final int POPULAR_ORDER = R.string.sort_by_popularity;
-//    private final String NEWEST_ORDER;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,13 +47,13 @@ public class MainActivity extends AppCompatActivity {
 
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_movie_view);
         mErrorTextView = (TextView) findViewById(R.id.tv_error_message);
-
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        
+        GridLayoutManager layoutManager = new GridLayoutManager(this, 2, GridLayoutManager.VERTICAL, false);
         mRecyclerView.setLayoutManager(layoutManager);
 
         mRecyclerView.setHasFixedSize(true);
 
-        mMovieAdapter = new MovieAdapter(this);
+        mMovieAdapter = new MovieAdapter(this, this);
         mRecyclerView.setAdapter(mMovieAdapter);
 
         mProgressBar = (ProgressBar) findViewById(R.id.pg_loading);
@@ -97,6 +92,12 @@ public class MainActivity extends AppCompatActivity {
     private void showErrorMessage() {
         mRecyclerView.setVisibility(View.INVISIBLE);
         mErrorTextView.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void onClick(String movieInformation) {
+        Context context = this;
+        Toast.makeText(context, movieInformation, Toast.LENGTH_SHORT).show();
     }
 
     public class FetchMovieInformation extends AsyncTask<String, Void, String[]> {

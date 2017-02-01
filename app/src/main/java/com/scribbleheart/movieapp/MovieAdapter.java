@@ -5,9 +5,9 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
@@ -15,10 +15,12 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
 
     private String[] mImageUrls;
     private Context context;
+    MovieAdapterClickHandler mClickHandler;
 
-    public MovieAdapter(Context context) {
+    public MovieAdapter(Context context, MovieAdapterClickHandler clickHandler) {
         Picasso.with(context).setLoggingEnabled(true);
         this.context = context;
+        mClickHandler = clickHandler;
     }
 
     public void setMovieImage(String[] result) {
@@ -26,15 +28,25 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
         notifyDataSetChanged();
     }
 
-    public class MovieAdapterViewHolder extends RecyclerView.ViewHolder {
+    public class MovieAdapterViewHolder extends RecyclerView.ViewHolder implements OnClickListener {
         public final ImageView mMovieImage;
-//        public final TextView tv;
 
         public MovieAdapterViewHolder(View view) {
             super(view);
             mMovieImage = (ImageView) view.findViewById(R.id.iv_movie_image);
-//            tv = (TextView) view.findViewById(R.id.iv_movie_text);
+            view.setOnClickListener(this);
         }
+
+        @Override
+        public void onClick(View view) {
+            // get the information to send to the ClickHandler, and then run the function
+            String url = mImageUrls[getAdapterPosition()];
+            mClickHandler.onClick(url);
+        }
+    }
+
+    public interface MovieAdapterClickHandler {
+        void onClick(String movieInformation);
     }
 
     @Override
@@ -49,7 +61,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
     public void onBindViewHolder(MovieAdapterViewHolder holder, int position) {
         Log.d(TAG, "pictures are being loaded now with the URL " + mImageUrls[position]);
         String imageUrl = mImageUrls[position];
-//        holder.tv.setText(imageUrl);
         Picasso.with(context)
                 .load(imageUrl)
                 .into(holder.mMovieImage);

@@ -66,8 +66,7 @@ public class NetworkUtils {
         JSONObject jsonObject = new JSONObject(jsonResponse);
         JSONArray resultJsonArray = jsonObject.getJSONArray("results");
 
-//        int length = resultJsonArray.length();
-        int length = 2;
+        int length = resultJsonArray.length();
         String[] list = new String[length];
         for(int i = 0; i < length; i++) {
             Log.d(TAG, String.valueOf(i));

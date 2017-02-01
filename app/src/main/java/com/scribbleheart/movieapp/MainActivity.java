@@ -1,6 +1,7 @@
 package com.scribbleheart.movieapp;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
@@ -47,7 +48,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
 
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_movie_view);
         mErrorTextView = (TextView) findViewById(R.id.tv_error_message);
-        
+
         GridLayoutManager layoutManager = new GridLayoutManager(this, 2, GridLayoutManager.VERTICAL, false);
         mRecyclerView.setLayoutManager(layoutManager);
 
@@ -97,7 +98,9 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     @Override
     public void onClick(String movieInformation) {
         Context context = this;
-        Toast.makeText(context, movieInformation, Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(context, SingleMovieActivity.class);
+        startActivity(intent);
+        //Toast.makeText(context, movieInformation, Toast.LENGTH_SHORT).show();
     }
 
     public class FetchMovieInformation extends AsyncTask<String, Void, String[]> {

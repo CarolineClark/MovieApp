@@ -2,12 +2,10 @@ package com.scribbleheart.movieapp;
 
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
@@ -16,20 +14,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.scribbleheart.movieapp.utils.Constants;
 import com.scribbleheart.movieapp.utils.NetworkUtils;
-import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
-import java.util.Scanner;
 
 import static com.scribbleheart.movieapp.utils.NetworkUtils.parseJsonResults;
 
@@ -81,7 +72,11 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         item.setChecked(true);
-        selectedOrder = item.getTitle().toString();
+        if (item.getItemId() == R.id.sort_by_newest) {
+            selectedOrder = Constants.LATEST_ORDER;
+        } else if (item.getItemId() == R.id.sort_by_popularity) {
+            selectedOrder = Constants.POPULAR_ORDER;
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -100,7 +95,6 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         Context context = this;
         Intent intent = new Intent(context, SingleMovieActivity.class);
         startActivity(intent);
-        //Toast.makeText(context, movieInformation, Toast.LENGTH_SHORT).show();
     }
 
     public class FetchMovieInformation extends AsyncTask<String, Void, String[]> {
@@ -143,6 +137,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
             if (movieData != null) {
                 mMovieAdapter.setMovieImage(movieData);
             } else {
+                showErrorMessage();
                 Log.v(TAG, "movie data is null! This is weird");
             }
         }

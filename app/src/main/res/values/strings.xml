@@ -4,4 +4,6 @@
     <string name="sort_by_popularity">By Popularity</string>
     <string name="sort_by_newest">By Newest</string>
     <string name="sort_by_alphabetical">By Alphabetical</string>
+    <string name="refresh">Refresh</string>
+    <string name="sort_by_title">Sort by</string>
 </resources>

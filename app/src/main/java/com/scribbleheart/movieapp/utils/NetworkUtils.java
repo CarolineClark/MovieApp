@@ -17,8 +17,6 @@ import java.util.Scanner;
 public class NetworkUtils {
 
     private static final String MOVIE_BASE_URL = "https://api.themoviedb.org/3/movie";
-    private static final String MOVIE_POPULAR_ORDER = "popular";
-    private static final String MOVIE_LATEST_ORDER = "latest";
     private static final String API_KEY_PARAM = "api_key";
     private static final String IMAGE_BASE_URL = "http://image.tmdb.org/t/p";
 
@@ -28,7 +26,7 @@ public class NetworkUtils {
 
     public static URL buildMovieUrl(String order) {
         Uri builtUri = Uri.parse(MOVIE_BASE_URL).buildUpon()
-                .appendPath(MOVIE_POPULAR_ORDER)
+                .appendPath(order)
                 .appendQueryParameter(API_KEY_PARAM, USER_API_KEY)
                 .build();
 

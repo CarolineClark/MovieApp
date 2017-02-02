@@ -8,7 +8,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
@@ -65,7 +64,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
         Picasso.with(context)
                 .load(imageUrl)
                 .into(holder.mMovieImage);
-        Toast.makeText(context, imageUrl, Toast.LENGTH_SHORT).show();
     }
 
     @Override

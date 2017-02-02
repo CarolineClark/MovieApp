@@ -14,6 +14,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.scribbleheart.movieapp.utils.Constants;
 import com.scribbleheart.movieapp.utils.NetworkUtils;
@@ -49,7 +50,13 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         mRecyclerView.setAdapter(mMovieAdapter);
 
         mProgressBar = (ProgressBar) findViewById(R.id.pg_loading);
+        setInitialSelectedOrder();
         loadMovies();
+    }
+
+    private void setInitialSelectedOrder() {
+        // TODO find the highlighted menu item, and set this member variable appropriately
+        selectedOrder = Constants.POPULAR_ORDER;
     }
 
     @Override
@@ -73,11 +80,18 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     public boolean onOptionsItemSelected(MenuItem item) {
         item.setChecked(true);
         if (item.getItemId() == R.id.sort_by_newest) {
-            selectedOrder = Constants.LATEST_ORDER;
+            reloadMoviesWithNewOrder(Constants.LATEST_ORDER);
         } else if (item.getItemId() == R.id.sort_by_popularity) {
-            selectedOrder = Constants.POPULAR_ORDER;
+            reloadMoviesWithNewOrder(Constants.POPULAR_ORDER);
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void reloadMoviesWithNewOrder(String newOrder) {
+        if (!selectedOrder.equals(newOrder)) {
+            selectedOrder = newOrder;
+            loadMovies();
+        }
     }
 
     private void showMovieDataView() {
@@ -112,7 +126,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
             }
             String order = params[0];
             URL url = NetworkUtils.buildMovieUrl(order);
-            String jsonResponse = null;
+            Log.d(TAG, "Url = " + url);
+            String jsonResponse;
 
             try {
                 jsonResponse = NetworkUtils.getResponseFromHttpUrl(url);

@@ -25,6 +25,11 @@ public class NetworkUtils {
     private static final String KEY_POSTER_PATH = "poster_path";
 
     public static URL buildMovieUrl(String order) {
+        if (order == null) {
+            // TODO: Raise exception, or trigger showing a dialog? This can be extended to whether
+            // TODO: it is one of the values in the Constants class
+        }
+
         Uri builtUri = Uri.parse(MOVIE_BASE_URL).buildUpon()
                 .appendPath(order)
                 .appendQueryParameter(API_KEY_PARAM, USER_API_KEY)
@@ -62,7 +67,16 @@ public class NetworkUtils {
 
     public static String[] parseJsonResults(String jsonResponse) throws JSONException {
         JSONObject jsonObject = new JSONObject(jsonResponse);
-        JSONArray resultJsonArray = jsonObject.getJSONArray("results");
+        JSONArray resultJsonArray;
+        if (jsonObject.has("results")) {
+            resultJsonArray = jsonObject.getJSONArray("results");
+        } else if (jsonObject.has("poster_path")) {
+            resultJsonArray = new JSONArray();
+            resultJsonArray.put(jsonObject);
+        } else {
+            // TODO, should show "empty results" message
+            resultJsonArray = new JSONArray();
+        }
 
         int length = resultJsonArray.length();
         String[] list = new String[length];

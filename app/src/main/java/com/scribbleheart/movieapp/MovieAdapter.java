@@ -9,11 +9,13 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.scribbleheart.movieapp.utils.JsonWrapper;
 import com.squareup.picasso.Picasso;
+
 
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapterViewHolder> {
 
-    private String[] mImageUrls;
+    private JsonWrapper[] mJsonMovies;
     private Context context;
     MovieAdapterClickHandler mClickHandler;
 
@@ -23,8 +25,8 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
         mClickHandler = clickHandler;
     }
 
-    public void setMovieImage(String[] result) {
-        mImageUrls = result;
+    public void setJsonResponse(JsonWrapper[] response) {
+        mJsonMovies = response;
         notifyDataSetChanged();
     }
 
@@ -39,9 +41,9 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
 
         @Override
         public void onClick(View view) {
-            // get the information to send to the ClickHandler, and then run the function
-            String url = mImageUrls[getAdapterPosition()];
-            mClickHandler.onClick(url);
+            JsonWrapper wrapper = mJsonMovies[getAdapterPosition()];
+            mClickHandler.onClick(wrapper.toString());
+
         }
     }
 
@@ -59,8 +61,8 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
 
     @Override
     public void onBindViewHolder(MovieAdapterViewHolder holder, int position) {
-        Log.d(TAG, "pictures are being loaded now with the URL " + mImageUrls[position]);
-        String imageUrl = mImageUrls[position];
+        String imageUrl = mJsonMovies[position].getMovieImageUrl();
+        Log.d(TAG, imageUrl);
         Picasso.with(context)
                 .load(imageUrl)
                 .into(holder.mMovieImage);
@@ -68,10 +70,10 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
 
     @Override
     public int getItemCount() {
-        if (mImageUrls == null) {
+        if (mJsonMovies == null) {
             return 0;
         }
-        return mImageUrls.length;
+        return mJsonMovies.length;
     }
 
     private String TAG = MovieAdapter.class.getSimpleName();

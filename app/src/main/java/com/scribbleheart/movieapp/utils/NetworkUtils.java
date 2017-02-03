@@ -1,6 +1,7 @@
 package com.scribbleheart.movieapp.utils;
 
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -22,7 +23,6 @@ public class NetworkUtils {
 
     // TODO Enter your key here!
     private static final String USER_API_KEY = "your_api_key";
-    private static final String KEY_POSTER_PATH = "poster_path";
 
     public static URL buildMovieUrl(String order) {
         if (order == null) {
@@ -65,33 +65,9 @@ public class NetworkUtils {
         }
     }
 
-    public static String[] parseJsonResults(String jsonResponse) throws JSONException {
-        JSONObject jsonObject = new JSONObject(jsonResponse);
-        JSONArray resultJsonArray;
-        if (jsonObject.has("results")) {
-            resultJsonArray = jsonObject.getJSONArray("results");
-        } else if (jsonObject.has("poster_path")) {
-            resultJsonArray = new JSONArray();
-            resultJsonArray.put(jsonObject);
-        } else {
-            // TODO, should show "empty results" message
-            resultJsonArray = new JSONArray();
-        }
-
-        int length = resultJsonArray.length();
-        String[] list = new String[length];
-        for(int i = 0; i < length; i++) {
-            Log.d(TAG, String.valueOf(i));
-            String poster_id = resultJsonArray.getJSONObject(i).getString(KEY_POSTER_PATH);
-            String imageUrl = constructImageUrl(poster_id);
-            Log.d(TAG, "In networkutils, " + imageUrl);
-            list[i] = imageUrl;
-        }
-        return list;
-    }
-
     private static String getSize() {
-        return "w185";
+        // TODO what happens when you make this bigger or smaller?
+        return "w600";
     }
 
     public static String constructImageUrl(String imageId) {

@@ -4,12 +4,13 @@
 <LinearLayout android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_weight="1"
     xmlns:android="http://schemas.android.com/apk/res/android">
     <ImageView android:id="@+id/iv_movie_image"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
-    <View
-        android:layout_height="1dp"
-        android:layout_width="match_parent"/>
+    <VideoView
+        android:layout_width="match_parent"
+        android:layout_height="1dp" />
 
 </LinearLayout>

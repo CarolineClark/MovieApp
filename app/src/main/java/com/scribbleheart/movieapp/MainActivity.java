@@ -14,16 +14,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.scribbleheart.movieapp.utils.Constants;
+import com.scribbleheart.movieapp.utils.JsonParser;
+import com.scribbleheart.movieapp.utils.JsonWrapper;
 import com.scribbleheart.movieapp.utils.NetworkUtils;
 
-import org.json.JSONException;
 
 import java.net.URL;
-
-import static com.scribbleheart.movieapp.utils.NetworkUtils.parseJsonResults;
 
 public class MainActivity extends AppCompatActivity implements MovieAdapter.MovieAdapterClickHandler {
 
@@ -108,10 +106,11 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     public void onClick(String movieInformation) {
         Context context = this;
         Intent intent = new Intent(context, SingleMovieActivity.class);
+        intent.putExtra(Constants.MOVIE_JSON_KEY, movieInformation);
         startActivity(intent);
     }
 
-    public class FetchMovieInformation extends AsyncTask<String, Void, String[]> {
+    public class FetchMovieInformation extends AsyncTask<String, Void, JsonWrapper[]> {
 
         @Override
         protected void onPreExecute() {
@@ -120,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         }
 
         @Override
-        protected String[] doInBackground(String... params) {
+        protected JsonWrapper[] doInBackground(String... params) {
             if (params.length == 0) {
                 return null;
             }
@@ -138,19 +137,14 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
                 return null;
             }
 
-            try {
-                return parseJsonResults(jsonResponse);
-            } catch (JSONException e) {
-                e.printStackTrace();
-                return null;
-            }
+            return JsonParser.parseJsonResultsToWrapper(jsonResponse);
         }
 
         @Override
-        protected void onPostExecute(String[] movieData) {
+        protected void onPostExecute(JsonWrapper[] movies) {
             mProgressBar.setVisibility(View.INVISIBLE);
-            if (movieData != null) {
-                mMovieAdapter.setMovieImage(movieData);
+            if (movies != null) {
+                mMovieAdapter.setJsonResponse(movies);
             } else {
                 showErrorMessage();
                 Log.v(TAG, "movie data is null! This is weird");

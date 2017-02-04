@@ -1,12 +1,7 @@
 package com.scribbleheart.movieapp.utils;
 
 import android.net.Uri;
-import android.support.annotation.NonNull;
 import android.util.Log;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -67,7 +62,7 @@ public class NetworkUtils {
 
     private static String getSize() {
         // TODO what happens when you make this bigger or smaller?
-        return "w600";
+        return "w780";
     }
 
     public static String constructImageUrl(String imageId) {

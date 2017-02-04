@@ -2,7 +2,6 @@ package com.scribbleheart.movieapp;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -20,7 +19,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
     MovieAdapterClickHandler mClickHandler;
 
     public MovieAdapter(Context context, MovieAdapterClickHandler clickHandler) {
-        Picasso.with(context).setLoggingEnabled(true);
         this.context = context;
         mClickHandler = clickHandler;
     }
@@ -62,7 +60,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
     @Override
     public void onBindViewHolder(MovieAdapterViewHolder holder, int position) {
         String imageUrl = mJsonMovies[position].getMovieImageUrl();
-        Log.d(TAG, imageUrl);
         Picasso.with(context)
                 .load(imageUrl)
                 .into(holder.mMovieImage);

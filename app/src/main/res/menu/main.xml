@@ -19,15 +19,11 @@
                 <item
                     android:id="@+id/sort_by_popularity"
                     android:title="@string/sort_by_popularity"
+                    android:orderInCategory="1"/>
+                <item
+                    android:id="@+id/sort_by_top_rated"
+                    android:title="@string/sort_by_top_rated"
                     android:orderInCategory="2"/>
-                <item
-                    android:id="@+id/sort_by_alphabetical"
-                    android:title="@string/sort_by_alphabetical"
-                    android:orderInCategory="3"/>
-                <item
-                    android:id="@+id/sort_by_newest"
-                    android:title="@string/sort_by_newest"
-                    android:orderInCategory="4"/>
             </group>
         </menu>
     </item>

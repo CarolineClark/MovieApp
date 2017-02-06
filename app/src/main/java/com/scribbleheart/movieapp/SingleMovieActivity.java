@@ -7,7 +7,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.scribbleheart.movieapp.utils.Constants;
-import com.scribbleheart.movieapp.utils.JsonWrapper;
+import com.scribbleheart.movieapp.utils.MovieBean;
 import com.squareup.picasso.Picasso;
 
 
@@ -29,21 +29,20 @@ public class SingleMovieActivity extends AppCompatActivity {
         releaseDate = (TextView) findViewById(R.id.movie_release_date);
         imageView = (ImageView) findViewById(R.id.movie_image);
 
-        String text = getDataFromIntent();
-        JsonWrapper wrapper = new JsonWrapper(text);
-        title.setText(wrapper.getOriginalTitle());
-        overview.setText(wrapper.getOverview());
-        movieRating.setText(wrapper.getVoteAverage());
-        releaseDate.setText(wrapper.getReleaseDate());
+        MovieBean movie = getBeanFromIntent();
+        title.setText(movie.getTitle());
+        overview.setText(movie.getDescription());
+        movieRating.setText(movie.getRating());
+        releaseDate.setText(movie.getReleaseDate());
         Picasso.with(this)
-                .load(wrapper.getMovieImageUrl())
+                .load(movie.getUrl())
                 .into(imageView);
     }
 
-    private String getDataFromIntent() {
+    private MovieBean getBeanFromIntent() {
         Intent intent = getIntent();
         if (intent.hasExtra(Constants.MOVIE_JSON_KEY)) {
-            return intent.getStringExtra(Constants.MOVIE_JSON_KEY);
+            return getIntent().getExtras().getParcelable(Constants.MOVIE_JSON_KEY);
         }
         return null;
     }

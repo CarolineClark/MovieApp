@@ -1,6 +1,7 @@
 package com.scribbleheart.movieapp;
 
 import android.content.Context;
+import android.os.Parcelable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,13 +9,13 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.scribbleheart.movieapp.utils.JsonWrapper;
+import com.scribbleheart.movieapp.utils.MovieBean;
 import com.squareup.picasso.Picasso;
 
 
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapterViewHolder> {
 
-    private JsonWrapper[] mJsonMovies;
+    private MovieBean[] mMovies;
     private Context context;
     MovieAdapterClickHandler mClickHandler;
 
@@ -23,8 +24,8 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
         mClickHandler = clickHandler;
     }
 
-    public void setJsonResponse(JsonWrapper[] response) {
-        mJsonMovies = response;
+    public void setMovies(MovieBean[] movies) {
+        mMovies = movies;
         notifyDataSetChanged();
     }
 
@@ -39,14 +40,13 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
 
         @Override
         public void onClick(View view) {
-            JsonWrapper wrapper = mJsonMovies[getAdapterPosition()];
-            mClickHandler.onClick(wrapper.toString());
-
+            MovieBean movie = mMovies[getAdapterPosition()];
+            mClickHandler.onClick(movie);
         }
     }
 
     public interface MovieAdapterClickHandler {
-        void onClick(String movieInformation);
+        void onClick(Parcelable movieInfo);
     }
 
     @Override
@@ -59,7 +59,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
 
     @Override
     public void onBindViewHolder(MovieAdapterViewHolder holder, int position) {
-        String imageUrl = mJsonMovies[position].getMovieImageUrl();
+        String imageUrl = mMovies[position].getUrl();
         Picasso.with(context)
                 .load(imageUrl)
                 .into(holder.mMovieImage);
@@ -67,10 +67,10 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
 
     @Override
     public int getItemCount() {
-        if (mJsonMovies == null) {
+        if (mMovies == null) {
             return 0;
         }
-        return mJsonMovies.length;
+        return mMovies.length;
     }
 
     private String TAG = MovieAdapter.class.getSimpleName();

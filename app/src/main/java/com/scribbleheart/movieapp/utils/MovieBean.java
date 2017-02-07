@@ -48,8 +48,8 @@ public class MovieBean implements Parcelable {
         dest.writeString(posterPath);
         dest.writeString(rating);
         dest.writeString(description);
-        dest.writeString(url);
         dest.writeString(releaseDate);
+        dest.writeString(url);
     }
 
     @Override

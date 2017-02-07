@@ -3,6 +3,7 @@ package com.scribbleheart.movieapp;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -17,6 +18,8 @@ public class SingleMovieActivity extends AppCompatActivity {
     private TextView movieRating;
     private TextView releaseDate;
     private ImageView imageView;
+
+    private static String TAG = SingleMovieActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +37,7 @@ public class SingleMovieActivity extends AppCompatActivity {
         overview.setText(movie.getDescription());
         movieRating.setText(movie.getRating());
         releaseDate.setText(movie.getReleaseDate());
+        Log.d(TAG, "url is " + movie.getUrl());
         Picasso.with(this)
                 .load(movie.getUrl())
                 .into(imageView);

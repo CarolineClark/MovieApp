@@ -21,8 +21,6 @@ public class NetworkUtils {
 
     public static URL buildMovieUrl(String order) {
         if (order == null) {
-            // TODO: Raise exception, or trigger showing a dialog? This can be extended to whether
-            // TODO: it is one of the values in the Constants class
         }
 
         Uri builtUri = Uri.parse(MOVIE_BASE_URL).buildUpon()
@@ -61,7 +59,6 @@ public class NetworkUtils {
     }
 
     private static String getSize() {
-        // TODO what happens when you make this bigger or smaller?
         return "w780";
     }
 

@@ -37,7 +37,6 @@ public class SingleMovieActivity extends AppCompatActivity {
         overview.setText(movie.getDescription());
         movieRating.setText(movie.getRating());
         releaseDate.setText(movie.getReleaseDate());
-        Log.d(TAG, "url is " + movie.getUrl());
         Picasso.with(this)
                 .load(movie.getUrl())
                 .into(imageView);

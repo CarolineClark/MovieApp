@@ -59,7 +59,7 @@ public class NetworkUtils {
     }
 
     private static String getSize() {
-        return "w780";
+        return "w185";
     }
 
     public static String constructImageUrl(String imageId) {

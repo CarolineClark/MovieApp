@@ -1,3 +1,4 @@
 
+Add your API key to your gradle.properties like below:
 
-Add your API key to NetworkUtils, for the USER_API_KEY
+MovieDbApiKey="XXXXXXXXXXXXXXXXXXXXXXXXXX"

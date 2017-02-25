@@ -54,7 +54,6 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     }
 
     private void setInitialSelectedOrder() {
-        // TODO Read this config from a file
         selectedOrder = Constants.TOP_RATED;
     }
 
@@ -77,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
 
     private void loadMovies() {
         showMovieDataView();
+        // TODO: swap this for an AsyncTaskLoader
         new FetchMovieInformation().execute(selectedOrder);
     }
 
@@ -135,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
                 return null;
             }
             String order = params[0];
-            URL url = NetworkUtils.buildMovieUrl(order);
+            URL url = NetworkUtils.buildListOfMoviesUrl(order);
             Log.d(TAG, "Url = " + url);
             String jsonResponse;
 

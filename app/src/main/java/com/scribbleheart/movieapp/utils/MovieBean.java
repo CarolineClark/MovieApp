@@ -13,12 +13,14 @@ public class MovieBean implements Parcelable {
     private String rating;
     private String description;
     private String releaseDate;
+    private String id;
 
     private static final String KEY_POSTER_PATH = "poster_path";
     private static final String KEY_ORIGINAL_TITLE = "original_title";
     private static final String KEY_RELEASE_DATE = "release_date";
     private static final String KEY_VOTE_AVERAGE = "vote_average";
     private static final String KEY_OVERVIEW = "overview";
+    private static final String KEY_ID = "id";
 
     protected MovieBean(Parcel in) {
         title = in.readString();
@@ -27,6 +29,7 @@ public class MovieBean implements Parcelable {
         description = in.readString();
         releaseDate = in.readString();
         url = in.readString();
+        id = in.readString();
     }
 
     public MovieBean(JSONObject jsonObj) {
@@ -37,6 +40,7 @@ public class MovieBean implements Parcelable {
             rating = jsonObj.getString(KEY_VOTE_AVERAGE);
             description = jsonObj.getString(KEY_OVERVIEW);
             url = getMovieImageUrl();
+            id = jsonObj.getString(KEY_ID);
         } catch (JSONException e) {
             // don't do anything
         }
@@ -50,6 +54,7 @@ public class MovieBean implements Parcelable {
         dest.writeString(description);
         dest.writeString(releaseDate);
         dest.writeString(url);
+        dest.writeString(id);
     }
 
     @Override
@@ -94,5 +99,9 @@ public class MovieBean implements Parcelable {
 
     public String getReleaseDate() {
         return releaseDate;
+    }
+
+    public String getId() {
+        return id;
     }
 }

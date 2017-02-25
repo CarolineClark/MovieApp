@@ -5,6 +5,11 @@
     android:layout_height="match_parent"
     android:background="@color/colorPrimary">
 
+    <ProgressBar
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/single_movie_progress_bar"/>
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -62,6 +67,12 @@
                 android:layout_height="wrap_content"
                 android:textColor="@color/textColor"
                 android:textSize="20sp"/>
+
+            <LinearLayout
+                android:id="@+id/trailer_linear_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"/>
 
         </LinearLayout>
     </ScrollView>

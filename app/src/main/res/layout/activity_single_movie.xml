@@ -72,7 +72,16 @@
                 android:id="@+id/trailer_linear_layout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical"/>
+                android:orientation="vertical">
+                <!-- TODO put default NO TRAILERS FOUND message here -->
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/reviews_linear_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+                <!-- TODO put default NO REVIEWS FOUND message here -->
+            </LinearLayout>
 
         </LinearLayout>
     </ScrollView>

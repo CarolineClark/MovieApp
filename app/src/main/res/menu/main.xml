@@ -24,6 +24,10 @@
                     android:id="@+id/sort_by_top_rated"
                     android:title="@string/sort_by_top_rated"
                     android:orderInCategory="2"/>
+                <item
+                    android:id="@+id/sort_by_favourites"
+                    android:title="@string/sort_by_favourites"
+                    android:orderInCategory="2"/>
             </group>
         </menu>
     </item>

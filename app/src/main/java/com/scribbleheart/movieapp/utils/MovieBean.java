@@ -13,14 +13,14 @@ public class MovieBean implements Parcelable {
     private String rating;
     private String description;
     private String releaseDate;
-    private String id;
+    private String urlId;
 
     private static final String KEY_POSTER_PATH = "poster_path";
     private static final String KEY_ORIGINAL_TITLE = "original_title";
     private static final String KEY_RELEASE_DATE = "release_date";
     private static final String KEY_VOTE_AVERAGE = "vote_average";
     private static final String KEY_OVERVIEW = "overview";
-    private static final String KEY_ID = "id";
+    private static final String KEY_ID = "urlId";
 
     protected MovieBean(Parcel in) {
         title = in.readString();
@@ -29,7 +29,7 @@ public class MovieBean implements Parcelable {
         description = in.readString();
         releaseDate = in.readString();
         url = in.readString();
-        id = in.readString();
+        urlId = in.readString();
     }
 
     public MovieBean(JSONObject jsonObj) {
@@ -39,11 +39,21 @@ public class MovieBean implements Parcelable {
             releaseDate = jsonObj.getString(KEY_RELEASE_DATE);
             rating = jsonObj.getString(KEY_VOTE_AVERAGE);
             description = jsonObj.getString(KEY_OVERVIEW);
-            url = getMovieImageUrl();
-            id = jsonObj.getString(KEY_ID);
+            url = getMovieImageUrl(posterPath);
+            urlId = jsonObj.getString(KEY_ID);
         } catch (JSONException e) {
             // don't do anything
         }
+    }
+
+    public MovieBean(String title, String posterPath, String releaseDate, String description, String urlId, String rating) {
+        this.title = title;
+        this.posterPath = posterPath;
+        this.url = getMovieImageUrl(posterPath);
+        this.releaseDate = releaseDate;
+        this.description = description;
+        this.urlId = urlId;
+        this.rating = rating;
     }
 
     @Override
@@ -54,7 +64,7 @@ public class MovieBean implements Parcelable {
         dest.writeString(description);
         dest.writeString(releaseDate);
         dest.writeString(url);
-        dest.writeString(id);
+        dest.writeString(urlId);
     }
 
     @Override
@@ -86,7 +96,7 @@ public class MovieBean implements Parcelable {
         return title;
     }
 
-    private String getMovieImageUrl() {
+    private String getMovieImageUrl(String posterPath) {
         if (posterPath != null) {
             return NetworkUtils.constructImageUrl(posterPath);
         }
@@ -101,7 +111,7 @@ public class MovieBean implements Parcelable {
         return releaseDate;
     }
 
-    public String getId() {
-        return id;
+    public String getUrlId() {
+        return urlId;
     }
 }

@@ -67,8 +67,8 @@ public class SingleMovieActivity extends AppCompatActivity {
                     .into(imageView);
         }
 
-        new FetchTrailerInformation().execute(movieBean.getId());
-        new FetchReviewInformation().execute(movieBean.getId());
+        new FetchTrailerInformation().execute(movieBean.getUrlId());
+        new FetchReviewInformation().execute(movieBean.getUrlId());
     }
 
     private MovieBean getBeanFromIntent() {

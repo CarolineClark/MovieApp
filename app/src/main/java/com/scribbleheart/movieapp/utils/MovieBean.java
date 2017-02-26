@@ -20,7 +20,7 @@ public class MovieBean implements Parcelable {
     private static final String KEY_RELEASE_DATE = "release_date";
     private static final String KEY_VOTE_AVERAGE = "vote_average";
     private static final String KEY_OVERVIEW = "overview";
-    private static final String KEY_ID = "urlId";
+    private static final String KEY_ID = "id";
 
     protected MovieBean(Parcel in) {
         title = in.readString();

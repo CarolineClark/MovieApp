@@ -2,8 +2,6 @@ package com.scribbleheart.movieapp;
 
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Parcelable;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -18,14 +16,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.scribbleheart.movieapp.data.MovieFavouritesContract;
 import com.scribbleheart.movieapp.loaders.FetchMoviesLoader;
 import com.scribbleheart.movieapp.utils.Constants;
 import com.scribbleheart.movieapp.utils.MovieBean;
-
-import static com.scribbleheart.movieapp.data.MovieFavouritesContract.MovieFavouritesEntry.COLUMN_TITLE;
 
 
 public class MainActivity extends AppCompatActivity implements MovieAdapter.MovieAdapterClickHandler {
@@ -102,14 +96,6 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         return true;
     }
 
-    private void loadMoviesFromDb() {
-        MovieBean[] favouriteMovies = getFavouriteMovies();
-        if (favouriteMovies.length == 0) {
-            Toast.makeText(this, "No favourites chosen yet!", Toast.LENGTH_SHORT).show();
-        }
-        mMovieAdapter.setMovies(favouriteMovies);
-    }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         item.setChecked(true);
@@ -163,24 +149,6 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         Intent intent = new Intent(context, SingleMovieActivity.class);
         intent.putExtra(Constants.MOVIE_JSON_KEY, movieInfo);
         startActivity(intent);
-    }
-
-    private MovieBean[] getFavouriteMovies() {
-
-        Uri uri = MovieFavouritesContract.MovieFavouritesEntry.CONTENT_URI;
-        Cursor cursor = getContentResolver().query(uri, null, null, null, COLUMN_TITLE);
-
-        int sizeOfDb = cursor.getCount();
-        MovieBean[] movies = new MovieBean[sizeOfDb];
-        for (int i = 0; i< sizeOfDb; i++) {
-            if (!cursor.moveToPosition(i)) {
-                return movies;
-            }
-            movies[i] = new MovieBean(cursor);
-        }
-
-        cursor.close();
-        return movies;
     }
 
     private String TAG = MainActivity.class.getSimpleName();

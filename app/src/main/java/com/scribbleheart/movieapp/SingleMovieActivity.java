@@ -2,6 +2,7 @@ package com.scribbleheart.movieapp;
 
 import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -16,6 +17,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.scribbleheart.movieapp.data.MovieFavouritesContract;
+import com.scribbleheart.movieapp.loaders.FavouriteMovieLoader;
 import com.scribbleheart.movieapp.loaders.FetchMovieReviews;
 import com.scribbleheart.movieapp.loaders.FetchMovieTrailers;
 import com.scribbleheart.movieapp.utils.Constants;
@@ -38,6 +40,7 @@ public class SingleMovieActivity extends AppCompatActivity {
     private static String TAG = SingleMovieActivity.class.getSimpleName();
     private final int TRAILER_LOADER_ID = 11;
     private final int REVIEW_LOADER_ID = 12;
+    private final int LOCAL_DB_LOADER_ID = 13;
 
     private LoaderManager.LoaderCallbacks<ReviewBean[]> reviewLoaderCallbacks = new LoaderManager.LoaderCallbacks<ReviewBean[]>() {
 
@@ -96,6 +99,22 @@ public class SingleMovieActivity extends AppCompatActivity {
         }
     };
 
+    private LoaderManager.LoaderCallbacks<Cursor> dbLoaderCallbacks = new LoaderManager.LoaderCallbacks<Cursor>() {
+        @Override
+        public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+            return new FavouriteMovieLoader(getApplicationContext(), urlId);
+        }
+
+        @Override
+        public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+            mFavouritesCheckBox.setChecked(data.getCount() > 0);
+        }
+
+        @Override
+        public void onLoaderReset(Loader<Cursor> loader) {
+
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,13 +131,14 @@ public class SingleMovieActivity extends AppCompatActivity {
         mFavouritesCheckBox = (CheckBox) findViewById(R.id.favourites_star);
 
         MovieBean movieBean = getBeanFromIntent();
-        final String urlId = movieBean.getUrlId();
+        urlId = movieBean.getUrlId();
         final String title = movieBean.getTitle();
         final String description = movieBean.getDescription();
         final String rating = movieBean.getRating();
         final String releaseDate = movieBean.getReleaseDate();
         final String posterPath = movieBean.getPosterPath();
         final String imgUrl = movieBean.getUrl();
+        final long dbId = movieBean.getDbId();
 
         mFavouritesCheckBox.setOnClickListener(
             new View.OnClickListener() {
@@ -139,11 +159,13 @@ public class SingleMovieActivity extends AppCompatActivity {
                         Uri uri = MovieFavouritesContract.MovieFavouritesEntry.CONTENT_URI;
                         getContentResolver().insert(uri, contentValues);
                     } else {
-                        //delete
+                        String stringId = Long.toString(dbId);
+                        Uri uri = MovieFavouritesContract.MovieFavouritesEntry.CONTENT_URI;
+                        uri = uri.buildUpon().appendPath(stringId).build();
+                        getContentResolver().delete(uri, null, null);
                     }
                 }
            }
-
         );
 
         this.mTitleTv.setText(title);
@@ -154,10 +176,10 @@ public class SingleMovieActivity extends AppCompatActivity {
                 .load(imgUrl)
                 .into(mImageView);
 
-        this.urlId = urlId;
         LoaderManager manager = getSupportLoaderManager();
         manager.initLoader(TRAILER_LOADER_ID, null, trailerLoaderCallbacks);
         manager.initLoader(REVIEW_LOADER_ID, null, reviewLoaderCallbacks);
+        manager.initLoader(LOCAL_DB_LOADER_ID, null, dbLoaderCallbacks);
     }
 
     private MovieBean getBeanFromIntent() {

@@ -78,7 +78,7 @@ public class MovieContentProvider extends ContentProvider {
                 String id = uri.getPathSegments().get(1);
                 retCursor =  db.query(TABLE_NAME,
                         projection,
-                        "_id=?",
+                        "urlId=?",
                         new String[]{id},
                         null,
                         null,

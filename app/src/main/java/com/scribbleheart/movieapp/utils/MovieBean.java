@@ -36,7 +36,7 @@ public class MovieBean implements Parcelable {
         releaseDate = in.readString();
         url = in.readString();
         urlId = in.readString();
-        dbId = NO_DB_ENTRY;
+        dbId = in.readLong();
     }
 
     public MovieBean(JSONObject jsonObj) {
@@ -52,16 +52,6 @@ public class MovieBean implements Parcelable {
         } catch (JSONException e) {
             // don't do anything
         }
-    }
-
-    public MovieBean(String title, String posterPath, String releaseDate, String description, String urlId, String rating) {
-        this.title = title;
-        this.posterPath = posterPath;
-        this.url = getMovieImageUrl(posterPath);
-        this.releaseDate = releaseDate;
-        this.description = description;
-        this.urlId = urlId;
-        this.rating = rating;
     }
 
     public MovieBean(Cursor cursor) {
@@ -84,6 +74,7 @@ public class MovieBean implements Parcelable {
         dest.writeString(releaseDate);
         dest.writeString(url);
         dest.writeString(urlId);
+        dest.writeLong(dbId);
     }
 
     @Override

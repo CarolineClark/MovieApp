@@ -18,6 +18,10 @@
             </intent-filter>
         </activity>
         <activity android:name=".SingleMovieActivity"></activity>
+        <provider
+            android:name="com.scribbleheart.movieapp.MovieContentProvider"
+            android:authorities="com.scribbleheart.movieapp"
+            android:exported="false"/>
     </application>
 
 </manifest>

@@ -72,6 +72,7 @@ public class MovieBean implements Parcelable {
         releaseDate = cursor.getString(cursor.getColumnIndex(MovieFavouritesContract.MovieFavouritesEntry.COLUMN_RELEASE_DATE));
         urlId = cursor.getString(cursor.getColumnIndex(MovieFavouritesContract.MovieFavouritesEntry.COLUMN_RELEASE_URL_ID));
         dbId = cursor.getLong(cursor.getColumnIndex(MovieFavouritesContract.MovieFavouritesEntry._ID));
+        url = getMovieImageUrl(posterPath);
     }
 
     @Override

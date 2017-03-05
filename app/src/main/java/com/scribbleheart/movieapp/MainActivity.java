@@ -3,7 +3,7 @@ package com.scribbleheart.movieapp;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Parcelable;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -18,12 +18,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.scribbleheart.movieapp.data.MovieFavouritesContract;
-import com.scribbleheart.movieapp.data.MovieFavouritesDbHelper;
 import com.scribbleheart.movieapp.loaders.FetchMoviesLoader;
 import com.scribbleheart.movieapp.utils.Constants;
 import com.scribbleheart.movieapp.utils.MovieBean;
+
+import static com.scribbleheart.movieapp.data.MovieFavouritesContract.MovieFavouritesEntry.COLUMN_TITLE;
 
 
 public class MainActivity extends AppCompatActivity implements MovieAdapter.MovieAdapterClickHandler {
@@ -34,7 +36,6 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     private ProgressBar mProgressBar;
     private String selectedOrder;
     private GridLayoutManager layoutManager;
-    private SQLiteDatabase mDb;
     private int FETCH_MOVE_INFO_LOADER_ID = 1;
 
     private LoaderManager.LoaderCallbacks<MovieBean[]> loaderCallbacks = new LoaderManager.LoaderCallbacks<MovieBean[]>() {
@@ -76,9 +77,6 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         mRecyclerView.setAdapter(mMovieAdapter);
         mProgressBar = (ProgressBar) findViewById(R.id.pg_loading);
 
-        MovieFavouritesDbHelper dbHelper = new MovieFavouritesDbHelper(this);
-        mDb = dbHelper.getReadableDatabase();
-
         setInitialSelectedOrder();
         getSupportLoaderManager().initLoader(FETCH_MOVE_INFO_LOADER_ID, null, loaderCallbacks);
     }
@@ -105,7 +103,11 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     }
 
     private void loadMoviesFromDb() {
-        mMovieAdapter.setMovies(getFavouriteMovies());
+        MovieBean[] favouriteMovies = getFavouriteMovies();
+        if (favouriteMovies.length == 0) {
+            Toast.makeText(this, "No favourites chosen yet!", Toast.LENGTH_SHORT).show();
+        }
+        mMovieAdapter.setMovies(favouriteMovies);
     }
 
     @Override
@@ -120,10 +122,10 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         } else if (item.getItemId() == R.id.refresh) {
             restartLoader();
             Log.d(TAG, "Refreshing the screen");
-//        } else if (item.getItemId() == R.id.sort_by_favourites) {
-//            // if this empty, should show a message like "No favourites chosen yet!"
-//            loadMoviesFromDb();
-//            Log.d(TAG, "sorting by favourites");
+        } else if (item.getItemId() == R.id.sort_by_favourites) {
+            // if this empty, should show a message like "No favourites chosen yet!"
+            reloadMoviesWithNewOrder(Constants.FAVOURITES);
+            Log.d(TAG, "sorting by favourites");
         }
         return super.onOptionsItemSelected(item);
     }
@@ -164,15 +166,9 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     }
 
     private MovieBean[] getFavouriteMovies() {
-         Cursor cursor = mDb.query(
-                MovieFavouritesContract.MovieFavouritesEntry.TABLE_NAME,
-                null,
-                null,
-                null,
-                null,
-                null,
-                MovieFavouritesContract.MovieFavouritesEntry.COLUMN_TITLE
-        );
+
+        Uri uri = MovieFavouritesContract.MovieFavouritesEntry.CONTENT_URI;
+        Cursor cursor = getContentResolver().query(uri, null, null, null, COLUMN_TITLE);
 
         int sizeOfDb = cursor.getCount();
         MovieBean[] movies = new MovieBean[sizeOfDb];

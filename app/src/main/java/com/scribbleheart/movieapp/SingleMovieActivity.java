@@ -1,7 +1,7 @@
 package com.scribbleheart.movieapp;
 
+import android.content.ContentValues;
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -15,7 +15,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.scribbleheart.movieapp.data.MovieFavouritesDbHelper;
+import com.scribbleheart.movieapp.data.MovieFavouritesContract;
 import com.scribbleheart.movieapp.loaders.FetchMovieReviews;
 import com.scribbleheart.movieapp.loaders.FetchMovieTrailers;
 import com.scribbleheart.movieapp.utils.Constants;
@@ -25,21 +25,19 @@ import com.squareup.picasso.Picasso;
 
 
 public class SingleMovieActivity extends AppCompatActivity {
-    private TextView title;
-    private TextView overview;
-    private TextView movieRating;
-    private TextView releaseDate;
-    private ImageView imageView;
-    private LinearLayout trailerLinearLayout;
-    private LinearLayout reviewLinearLayout;
-    private MovieBean movieBean;
+    private TextView mTitleTv;
+    private TextView mOverviewTv;
+    private TextView mMovieRatingTv;
+    private TextView mReleaseDateTv;
+    private ImageView mImageView;
+    private LinearLayout mTrailerLinearLayout;
+    private LinearLayout mReviewLinearLayout;
     private CheckBox mFavouritesCheckBox;
     private String urlId;
 
     private static String TAG = SingleMovieActivity.class.getSimpleName();
     private final int TRAILER_LOADER_ID = 11;
     private final int REVIEW_LOADER_ID = 12;
-    private SQLiteDatabase mDb;
 
     private LoaderManager.LoaderCallbacks<ReviewBean[]> reviewLoaderCallbacks = new LoaderManager.LoaderCallbacks<ReviewBean[]>() {
 
@@ -54,7 +52,7 @@ public class SingleMovieActivity extends AppCompatActivity {
                 for (final ReviewBean review: data) {
                     TextView textView = new TextView(getApplicationContext());
                     textView.setText(review.getContent());
-                    reviewLinearLayout.addView(textView);
+                    mReviewLinearLayout.addView(textView);
                 }
             } else {
                 Log.v(TAG, "No review info");
@@ -85,7 +83,7 @@ public class SingleMovieActivity extends AppCompatActivity {
                             startActivity(new Intent(Intent.ACTION_VIEW, trailerUri));
                         }
                     });
-                    trailerLinearLayout.addView(button);
+                    mTrailerLinearLayout.addView(button);
                 }
             } else {
                 Log.v(TAG, "No trailer info");
@@ -104,43 +102,62 @@ public class SingleMovieActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_single_movie);
 
-        title = (TextView) findViewById(R.id.movie_title);
-        overview = (TextView) findViewById(R.id.movie_overview);
-        movieRating = (TextView) findViewById(R.id.movie_vote_average);
-        releaseDate = (TextView) findViewById(R.id.movie_release_date);
-        imageView = (ImageView) findViewById(R.id.movie_image);
-        trailerLinearLayout = (LinearLayout) findViewById(R.id.trailer_linear_layout);
-        reviewLinearLayout = (LinearLayout) findViewById(R.id.reviews_linear_layout);
+        mTitleTv = (TextView) findViewById(R.id.movie_title);
+        mOverviewTv = (TextView) findViewById(R.id.movie_overview);
+        mMovieRatingTv = (TextView) findViewById(R.id.movie_vote_average);
+        mReleaseDateTv = (TextView) findViewById(R.id.movie_release_date);
+        mImageView = (ImageView) findViewById(R.id.movie_image);
+        mTrailerLinearLayout = (LinearLayout) findViewById(R.id.trailer_linear_layout);
+        mReviewLinearLayout = (LinearLayout) findViewById(R.id.reviews_linear_layout);
         mFavouritesCheckBox = (CheckBox) findViewById(R.id.favourites_star);
 
-        MovieFavouritesDbHelper dbHelper = new MovieFavouritesDbHelper(this);
-        mDb = dbHelper.getWritableDatabase();
+        MovieBean movieBean = getBeanFromIntent();
+        final String urlId = movieBean.getUrlId();
+        final String title = movieBean.getTitle();
+        final String description = movieBean.getDescription();
+        final String rating = movieBean.getRating();
+        final String releaseDate = movieBean.getReleaseDate();
+        final String posterPath = movieBean.getPosterPath();
+        final String imgUrl = movieBean.getUrl();
 
-        movieBean = getBeanFromIntent();
-        urlId = populateViewFrom(movieBean);
+        mFavouritesCheckBox.setOnClickListener(
+            new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if ( ((CheckBox)view).isChecked() ) {
+                        //insert
+                        ContentValues contentValues = new ContentValues();
+                        // Put the task description and selected mPriority into the ContentValues
+                        contentValues.put(MovieFavouritesContract.MovieFavouritesEntry.COLUMN_TITLE, title);
+                        contentValues.put(MovieFavouritesContract.MovieFavouritesEntry.COLUMN_IMG_URL, imgUrl);
+                        contentValues.put(MovieFavouritesContract.MovieFavouritesEntry.COLUMN_RATING, rating);
+                        contentValues.put(MovieFavouritesContract.MovieFavouritesEntry.COLUMN_DESCRIPTION, description);
+                        contentValues.put(MovieFavouritesContract.MovieFavouritesEntry.COLUMN_POSTER_PATH, posterPath);
+                        contentValues.put(MovieFavouritesContract.MovieFavouritesEntry.COLUMN_RELEASE_DATE, releaseDate);
+                        contentValues.put(MovieFavouritesContract.MovieFavouritesEntry.COLUMN_RELEASE_URL_ID, urlId);
+
+                        Uri uri = MovieFavouritesContract.MovieFavouritesEntry.CONTENT_URI;
+                        getContentResolver().insert(uri, contentValues);
+                    } else {
+                        //delete
+                    }
+                }
+           }
+
+        );
+
+        this.mTitleTv.setText(title);
+        mOverviewTv.setText(description);
+        mMovieRatingTv.setText(rating);
+        this.mReleaseDateTv.setText(releaseDate);
+        Picasso.with(this)
+                .load(imgUrl)
+                .into(mImageView);
+
+        this.urlId = urlId;
         LoaderManager manager = getSupportLoaderManager();
         manager.initLoader(TRAILER_LOADER_ID, null, trailerLoaderCallbacks);
         manager.initLoader(REVIEW_LOADER_ID, null, reviewLoaderCallbacks);
-    }
-
-    private String populateViewFrom(MovieBean movie) {
-        final String urlId = movie.getUrlId();
-        final String title = movie.getTitle();
-        final String description = movie.getDescription();
-        final String rating = movie.getRating();
-        final String releaseDate = movie.getReleaseDate();
-        final String posterPath = movie.getPosterPath();
-
-        this.title.setText(title);
-        overview.setText(description);
-        movieRating.setText(rating);
-        this.releaseDate.setText(releaseDate);
-        String url = movie.getUrl();
-        Picasso.with(this)
-                .load(url)
-                .into(imageView);
-
-        return urlId;
     }
 
     private MovieBean getBeanFromIntent() {

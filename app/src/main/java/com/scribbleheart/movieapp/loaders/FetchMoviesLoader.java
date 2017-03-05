@@ -1,14 +1,22 @@
 package com.scribbleheart.movieapp.loaders;
 
 import android.content.Context;
+import android.database.Cursor;
+import android.net.Uri;
+import android.support.annotation.Nullable;
 import android.support.v4.content.AsyncTaskLoader;
 import android.util.Log;
+
+import com.scribbleheart.movieapp.data.MovieFavouritesContract;
+import com.scribbleheart.movieapp.utils.Constants;
 import com.scribbleheart.movieapp.utils.MovieBean;
 import com.scribbleheart.movieapp.utils.NetworkUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.net.URL;
+
+import static com.scribbleheart.movieapp.data.MovieFavouritesContract.MovieFavouritesEntry.COLUMN_TITLE;
 
 
 public class FetchMoviesLoader extends AsyncTaskLoader<MovieBean[]> {
@@ -27,6 +35,15 @@ public class FetchMoviesLoader extends AsyncTaskLoader<MovieBean[]> {
 
     @Override
     public MovieBean[] loadInBackground() {
+        if (order.equals(Constants.FAVOURITES)) {
+            return getFavouriteMovies();
+        } else {
+            return getMoviesFromNetwork();
+        }
+    }
+
+    @Nullable
+    private MovieBean[] getMoviesFromNetwork() {
         URL url = NetworkUtils.buildListOfMoviesUrl(order);
         Log.d(TAG, "Url = " + url);
         String jsonResponse;
@@ -52,6 +69,24 @@ public class FetchMoviesLoader extends AsyncTaskLoader<MovieBean[]> {
         } catch (JSONException e) {
             return null;
         }
+    }
+
+    private MovieBean[] getFavouriteMovies() {
+
+        Uri uri = MovieFavouritesContract.MovieFavouritesEntry.CONTENT_URI;
+        Cursor cursor = getContext().getContentResolver().query(uri, null, null, null, COLUMN_TITLE);
+
+        int sizeOfDb = cursor.getCount();
+        MovieBean[] movies = new MovieBean[sizeOfDb];
+        for (int i = 0; i< sizeOfDb; i++) {
+            if (!cursor.moveToPosition(i)) {
+                return movies;
+            }
+            movies[i] = new MovieBean(cursor);
+        }
+
+        cursor.close();
+        return movies;
     }
 
     @Override

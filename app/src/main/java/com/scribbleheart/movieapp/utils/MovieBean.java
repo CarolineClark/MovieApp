@@ -1,6 +1,9 @@
 package com.scribbleheart.movieapp.utils;
+import android.database.Cursor;
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import com.scribbleheart.movieapp.data.MovieFavouritesContract;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,6 +17,7 @@ public class MovieBean implements Parcelable {
     private String description;
     private String releaseDate;
     private String urlId;
+    private long dbId;
 
     private static final String KEY_POSTER_PATH = "poster_path";
     private static final String KEY_ORIGINAL_TITLE = "original_title";
@@ -21,6 +25,8 @@ public class MovieBean implements Parcelable {
     private static final String KEY_VOTE_AVERAGE = "vote_average";
     private static final String KEY_OVERVIEW = "overview";
     private static final String KEY_ID = "id";
+
+    private static final long NO_DB_ENTRY = -1;
 
     protected MovieBean(Parcel in) {
         title = in.readString();
@@ -30,6 +36,7 @@ public class MovieBean implements Parcelable {
         releaseDate = in.readString();
         url = in.readString();
         urlId = in.readString();
+        dbId = NO_DB_ENTRY;
     }
 
     public MovieBean(JSONObject jsonObj) {
@@ -41,6 +48,7 @@ public class MovieBean implements Parcelable {
             description = jsonObj.getString(KEY_OVERVIEW);
             url = getMovieImageUrl(posterPath);
             urlId = jsonObj.getString(KEY_ID);
+            dbId = NO_DB_ENTRY;
         } catch (JSONException e) {
             // don't do anything
         }
@@ -54,6 +62,16 @@ public class MovieBean implements Parcelable {
         this.description = description;
         this.urlId = urlId;
         this.rating = rating;
+    }
+
+    public MovieBean(Cursor cursor) {
+        title = cursor.getString(cursor.getColumnIndex(MovieFavouritesContract.MovieFavouritesEntry.COLUMN_TITLE));
+        description = cursor.getString(cursor.getColumnIndex(MovieFavouritesContract.MovieFavouritesEntry.COLUMN_DESCRIPTION));
+        rating = cursor.getString(cursor.getColumnIndex(MovieFavouritesContract.MovieFavouritesEntry.COLUMN_RATING));
+        posterPath = cursor.getString(cursor.getColumnIndex(MovieFavouritesContract.MovieFavouritesEntry.COLUMN_POSTER_PATH));
+        releaseDate = cursor.getString(cursor.getColumnIndex(MovieFavouritesContract.MovieFavouritesEntry.COLUMN_RELEASE_DATE));
+        urlId = cursor.getString(cursor.getColumnIndex(MovieFavouritesContract.MovieFavouritesEntry.COLUMN_RELEASE_URL_ID));
+        dbId = cursor.getLong(cursor.getColumnIndex(MovieFavouritesContract.MovieFavouritesEntry._ID));
     }
 
     @Override
@@ -113,5 +131,21 @@ public class MovieBean implements Parcelable {
 
     public String getUrlId() {
         return urlId;
+    }
+
+    public String getPosterPath() {
+        return posterPath;
+    }
+
+    public long getDbId() {
+        return dbId;
+    }
+
+    public boolean dbEntryExists() {
+        // TODO two things could happen. We could create a movie bean from the cursor, or we could get it from the url.
+        // This depends on the entry point, not on the movie.
+        // Thus, we need a select statement?
+        return !(dbId == NO_DB_ENTRY);
+
     }
 }

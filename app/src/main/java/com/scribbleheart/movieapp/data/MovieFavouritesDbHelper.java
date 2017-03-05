@@ -7,7 +7,7 @@ import com.scribbleheart.movieapp.data.MovieFavouritesContract.MovieFavouritesEn
 
 public class MovieFavouritesDbHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "movie_favourites.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     public MovieFavouritesDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -21,7 +21,9 @@ public class MovieFavouritesDbHelper extends SQLiteOpenHelper {
                 MovieFavouritesEntry.COLUMN_DESCRIPTION + " TEXT NOT NULL, " +
                 MovieFavouritesEntry.COLUMN_RATING + " INTEGER NOT NULL, " +
                 MovieFavouritesEntry.COLUMN_IMG_URL + " TEXT NOT NULL, " +
-                MovieFavouritesEntry.COLUMN_REVIEW + " TEXT NOT NULL" +
+                MovieFavouritesEntry.COLUMN_POSTER_PATH + " TEXT NOT NULL, " +
+                MovieFavouritesEntry.COLUMN_RELEASE_DATE + " TEXT NOT NULL, " +
+                MovieFavouritesEntry.COLUMN_RELEASE_URL_ID + " TEXT NOT NULL" +
                 "); ";
 
         sqLiteDatabase.execSQL(SQL_CREATE_WAITLIST_TABLE);

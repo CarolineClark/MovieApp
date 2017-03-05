@@ -1,30 +1,27 @@
 package com.scribbleheart.movieapp;
 
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
-import android.os.AsyncTask;
-import android.support.annotation.NonNull;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.scribbleheart.movieapp.data.MovieFavouritesDbHelper;
+import com.scribbleheart.movieapp.loaders.FetchMovieReviews;
+import com.scribbleheart.movieapp.loaders.FetchMovieTrailers;
 import com.scribbleheart.movieapp.utils.Constants;
 import com.scribbleheart.movieapp.utils.MovieBean;
-import com.scribbleheart.movieapp.utils.NetworkUtils;
 import com.scribbleheart.movieapp.utils.ReviewBean;
 import com.squareup.picasso.Picasso;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.net.URL;
 
 
 public class SingleMovieActivity extends AppCompatActivity {
@@ -35,11 +32,72 @@ public class SingleMovieActivity extends AppCompatActivity {
     private ImageView imageView;
     private LinearLayout trailerLinearLayout;
     private LinearLayout reviewLinearLayout;
-    private ProgressBar mProgressBar;
     private MovieBean movieBean;
-
+    private CheckBox mFavouritesCheckBox;
+    private String urlId;
 
     private static String TAG = SingleMovieActivity.class.getSimpleName();
+    private final int TRAILER_LOADER_ID = 11;
+    private final int REVIEW_LOADER_ID = 12;
+    private SQLiteDatabase mDb;
+
+    private LoaderManager.LoaderCallbacks<ReviewBean[]> reviewLoaderCallbacks = new LoaderManager.LoaderCallbacks<ReviewBean[]>() {
+
+        @Override
+        public Loader<ReviewBean[]> onCreateLoader(int id, Bundle args) {
+            return new FetchMovieReviews(getApplicationContext(), urlId);
+        }
+
+        @Override
+        public void onLoadFinished(Loader<ReviewBean[]> loader, ReviewBean[] data) {
+            if (data != null) {
+                for (final ReviewBean review: data) {
+                    TextView textView = new TextView(getApplicationContext());
+                    textView.setText(review.getContent());
+                    reviewLinearLayout.addView(textView);
+                }
+            } else {
+                Log.v(TAG, "No review info");
+            }
+        }
+
+        @Override
+        public void onLoaderReset(Loader<ReviewBean[]> loader) {
+
+        }
+    };
+
+    private LoaderManager.LoaderCallbacks<Uri[]> trailerLoaderCallbacks = new LoaderManager.LoaderCallbacks<Uri[]>() {
+
+        @Override
+        public Loader<Uri[]> onCreateLoader(int id, Bundle args) {
+            return new FetchMovieTrailers(getApplicationContext(), urlId);
+        }
+
+        @Override
+        public void onLoadFinished(Loader<Uri[]> loader, Uri[] data) {
+            if (data != null) {
+                for (final Uri trailerUri : data) {
+                    Button button = new Button(getApplicationContext());
+                    button.setText(trailerUri.toString());
+                    button.setOnClickListener(new View.OnClickListener() {
+                        public void onClick(View v) {
+                            startActivity(new Intent(Intent.ACTION_VIEW, trailerUri));
+                        }
+                    });
+                    trailerLinearLayout.addView(button);
+                }
+            } else {
+                Log.v(TAG, "No trailer info");
+            }
+        }
+
+        @Override
+        public void onLoaderReset(Loader<Uri[]> loader) {
+
+        }
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,162 +111,39 @@ public class SingleMovieActivity extends AppCompatActivity {
         imageView = (ImageView) findViewById(R.id.movie_image);
         trailerLinearLayout = (LinearLayout) findViewById(R.id.trailer_linear_layout);
         reviewLinearLayout = (LinearLayout) findViewById(R.id.reviews_linear_layout);
-        mProgressBar = (ProgressBar) findViewById(R.id.single_movie_progress_bar);
+        mFavouritesCheckBox = (CheckBox) findViewById(R.id.favourites_star);
+
+        MovieFavouritesDbHelper dbHelper = new MovieFavouritesDbHelper(this);
+        mDb = dbHelper.getWritableDatabase();
 
         movieBean = getBeanFromIntent();
+        urlId = populateViewFrom(movieBean);
+        LoaderManager manager = getSupportLoaderManager();
+        manager.initLoader(TRAILER_LOADER_ID, null, trailerLoaderCallbacks);
+        manager.initLoader(REVIEW_LOADER_ID, null, reviewLoaderCallbacks);
+    }
 
-        if (movieBean != null) {
-            title.setText(movieBean.getTitle());
-            overview.setText(movieBean.getDescription());
-            movieRating.setText(movieBean.getRating());
-            releaseDate.setText(movieBean.getReleaseDate());
-            Picasso.with(this)
-                    .load(movieBean.getUrl())
-                    .into(imageView);
-        }
+    private String populateViewFrom(MovieBean movie) {
+        final String urlId = movie.getUrlId();
+        final String title = movie.getTitle();
+        final String description = movie.getDescription();
+        final String rating = movie.getRating();
+        final String releaseDate = movie.getReleaseDate();
+        final String posterPath = movie.getPosterPath();
 
-        new FetchTrailerInformation().execute(movieBean.getUrlId());
-        new FetchReviewInformation().execute(movieBean.getUrlId());
+        this.title.setText(title);
+        overview.setText(description);
+        movieRating.setText(rating);
+        this.releaseDate.setText(releaseDate);
+        String url = movie.getUrl();
+        Picasso.with(this)
+                .load(url)
+                .into(imageView);
+
+        return urlId;
     }
 
     private MovieBean getBeanFromIntent() {
-        Intent intent = getIntent();
-        if (intent.hasExtra(Constants.MOVIE_JSON_KEY)) {
-            return intent.getExtras().getParcelable(Constants.MOVIE_JSON_KEY);
-        }
-        return null;
-    }
-
-    public class FetchTrailerInformation extends AsyncTask<String, Void, Uri[]> {
-
-        @Override
-        protected void onPreExecute() {
-            mProgressBar.setVisibility(View.VISIBLE);
-            super.onPreExecute();
-        }
-
-        @Override
-        protected Uri[] doInBackground(String... params) {
-            if (params.length == 0) {
-                return null;
-            }
-            String id = params[0];
-            URL trailerUrl = NetworkUtils.buildVideosMovieUrl(id);
-            Log.d(TAG, "Trailer Url = " + trailerUrl);
-            String trailerJsonResponse;
-
-            try {
-                trailerJsonResponse = NetworkUtils.getResponseFromHttpUrl(trailerUrl);
-                Log.v(TAG, "Trailer response is " + trailerJsonResponse);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
-            }
-
-            try {
-                return parseTrailerJsonResponse(trailerJsonResponse);
-            } catch (JSONException e) {
-                return null;
-            }
-        }
-
-        @NonNull
-        private Uri[] parseTrailerJsonResponse(String trailerJsonResponse) throws JSONException {
-            JSONArray trailerArray = new JSONObject(trailerJsonResponse).getJSONArray("youtube");
-            int length = trailerArray.length();
-            Uri[] trailerUrls = new Uri[length];
-            for (int i = 0; i< length; i++) {
-                JSONObject trailerJson = trailerArray.getJSONObject(i);
-                trailerUrls[i] = createTrailerUrl(trailerJson);
-            }
-            return trailerUrls;
-        }
-
-        @Override
-        protected void onPostExecute(Uri[] trailers) {
-            mProgressBar.setVisibility(View.INVISIBLE);
-            if (trailers != null) {
-                for (final Uri trailerUri : trailers) {
-                    Button button = new Button(getApplicationContext());
-                    button.setText(trailerUri.toString());
-                    button.setOnClickListener(new View.OnClickListener() {
-                        public void onClick(View v) {
-                            startActivity(new Intent(Intent.ACTION_VIEW, trailerUri));
-                        }
-                    });
-                    trailerLinearLayout.addView(button);
-                }
-            } else {
-                // no trailers to show!
-                Log.v(TAG, "No trailer info");
-            }
-        }
-    }
-
-
-    public class FetchReviewInformation extends AsyncTask<String, Void, ReviewBean[]> {
-
-        @Override
-        protected void onPreExecute() {
-            mProgressBar.setVisibility(View.VISIBLE);
-            super.onPreExecute();
-        }
-
-        @Override
-        protected ReviewBean[] doInBackground(String... params) {
-            if (params.length == 0) {
-                return null;
-            }
-            String id = params[0];
-            URL reviewUrl = NetworkUtils.buildReviewMovieUrl(id);
-            Log.d(TAG, "Review Url = " + reviewUrl);
-            String reviewJsonResponse;
-
-            try {
-                reviewJsonResponse = NetworkUtils.getResponseFromHttpUrl(reviewUrl);
-                Log.v(TAG, "Review response is " + reviewJsonResponse);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
-            }
-
-            try {
-                return parseReviewJsonResponse(reviewJsonResponse);
-            } catch (JSONException e) {
-                return null;
-            }
-        }
-
-        @NonNull
-        private ReviewBean[] parseReviewJsonResponse(String reviewJsonResponse) throws JSONException {
-            JSONArray reviewArray = new JSONObject(reviewJsonResponse).getJSONArray("results");
-            int length = reviewArray.length();
-            ReviewBean[] reviews = new ReviewBean[length];
-            for (int i = 0; i< length; i++) {
-                JSONObject reviewJson = reviewArray.getJSONObject(i);
-                reviews[i] = new ReviewBean(reviewJson);
-            }
-            return reviews;
-        }
-
-        @Override
-        protected void onPostExecute(ReviewBean[] reviews) {
-            if (reviews != null) {
-                for (final ReviewBean review : reviews) {
-                    TextView textView = new TextView(getApplicationContext());
-                    textView.setText(review.getContent());
-                    reviewLinearLayout.addView(textView);
-                }
-            } else {
-                Log.v(TAG, "No review info");
-            }
-        }
-    }
-
-    private Uri createTrailerUrl(JSONObject trailerJson) throws JSONException {
-        String source = trailerJson.getString("source");
-        return NetworkUtils.createTrailerUri(source);
+        return getIntent().getExtras().getParcelable(Constants.MOVIE_JSON_KEY);
     }
 }

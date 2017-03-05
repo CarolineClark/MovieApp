@@ -8,7 +8,6 @@ public class MovieFavouritesContract {
     public class MovieFavouritesEntry implements BaseColumns {
         public final static String TABLE_NAME = "movie";
         public final static String COLUMN_TITLE = "title";
-        public final static String COLUMN_REVIEW = "review";
         public final static String COLUMN_IMG_URL = "imageUrl";
         public final static String COLUMN_RATING = "rating";
         public final static String COLUMN_DESCRIPTION = "description";

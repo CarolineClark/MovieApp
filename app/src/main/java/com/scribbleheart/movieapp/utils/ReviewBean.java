@@ -1,5 +1,7 @@
 package com.scribbleheart.movieapp.utils;
 
+import android.net.Uri;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -8,10 +10,10 @@ public class ReviewBean {
     private String author;
     private String content;
 
-    public ReviewBean(JSONObject jsonObj) {
+    public ReviewBean(JSONObject reviewJson) {
         try {
-            author = jsonObj.getString("author");
-            content = jsonObj.getString("content");
+            author = reviewJson.getString("author");
+            content = reviewJson.getString("content");
         } catch (JSONException e) {
             // do nothing
         }

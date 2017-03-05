@@ -25,7 +25,8 @@ import com.scribbleheart.movieapp.loaders.FetchMoviesLoader;
 import com.scribbleheart.movieapp.utils.Constants;
 import com.scribbleheart.movieapp.utils.MovieBean;
 
-public class MainActivity extends AppCompatActivity implements MovieAdapter.MovieAdapterClickHandler, LoaderManager.LoaderCallbacks<MovieBean[]> {
+
+public class MainActivity extends AppCompatActivity implements MovieAdapter.MovieAdapterClickHandler {
 
     private RecyclerView mRecyclerView;
     private TextView mErrorTextView;
@@ -35,6 +36,31 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     private GridLayoutManager layoutManager;
     private SQLiteDatabase mDb;
     private int FETCH_MOVE_INFO_LOADER_ID = 1;
+
+    private LoaderManager.LoaderCallbacks<MovieBean[]> loaderCallbacks = new LoaderManager.LoaderCallbacks<MovieBean[]>() {
+
+        @Override
+        public Loader<MovieBean[]> onCreateLoader(int id, Bundle args) {
+            return new FetchMoviesLoader(getApplicationContext(), selectedOrder);
+        }
+
+        @Override
+        public void onLoadFinished(Loader<MovieBean[]> loader, MovieBean[] data) {
+            mProgressBar.setVisibility(View.INVISIBLE);
+            if (data != null) {
+                showMovieDataView();
+                mMovieAdapter.setMovies(data);
+            } else {
+                showErrorMessage();
+                Log.v(TAG, "movie data is null! This is weird");
+            }
+        }
+
+        @Override
+        public void onLoaderReset(Loader<MovieBean[]> loader) {
+
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         mDb = dbHelper.getReadableDatabase();
 
         setInitialSelectedOrder();
-        getSupportLoaderManager().initLoader(FETCH_MOVE_INFO_LOADER_ID, null, this);
+        getSupportLoaderManager().initLoader(FETCH_MOVE_INFO_LOADER_ID, null, loaderCallbacks);
     }
 
     private void setInitialSelectedOrder() {
@@ -104,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
 
     private void restartLoader() {
         invalidateData();
-        getSupportLoaderManager().restartLoader(FETCH_MOVE_INFO_LOADER_ID, null, this);
+        getSupportLoaderManager().restartLoader(FETCH_MOVE_INFO_LOADER_ID, null, loaderCallbacks);
     }
 
     private void invalidateData() {
@@ -113,6 +139,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
 
     private void reloadMoviesWithNewOrder(String newOrder) {
         if (!selectedOrder.equals(newOrder)) {
+            // save order in SharedPreferences
             selectedOrder = newOrder;
             restartLoader();
         }
@@ -134,28 +161,6 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         Intent intent = new Intent(context, SingleMovieActivity.class);
         intent.putExtra(Constants.MOVIE_JSON_KEY, movieInfo);
         startActivity(intent);
-    }
-
-    @Override
-    public Loader<MovieBean[]> onCreateLoader(int id, Bundle args) {
-        return new FetchMoviesLoader(this, selectedOrder);
-    }
-
-    @Override
-    public void onLoadFinished(Loader<MovieBean[]> loader, MovieBean[] data) {
-        mProgressBar.setVisibility(View.INVISIBLE);
-        if (data != null) {
-            showMovieDataView();
-            mMovieAdapter.setMovies(data);
-        } else {
-            showErrorMessage();
-            Log.v(TAG, "movie data is null! This is weird");
-        }
-    }
-
-    @Override
-    public void onLoaderReset(Loader<MovieBean[]> loader) {
-
     }
 
     private MovieBean[] getFavouriteMovies() {

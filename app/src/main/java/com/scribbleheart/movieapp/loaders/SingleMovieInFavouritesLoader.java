@@ -3,16 +3,16 @@ package com.scribbleheart.movieapp.loaders;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.CursorLoader;
 
 import com.scribbleheart.movieapp.data.MovieFavouritesContract;
 
 import static com.scribbleheart.movieapp.data.MovieFavouritesContract.MovieFavouritesEntry.COLUMN_TITLE;
 
-public class FavouriteMovieLoader extends AsyncTaskLoader<Cursor> {
+public class SingleMovieInFavouritesLoader extends CursorLoader {
     private String urlId;
 
-    public FavouriteMovieLoader(Context context, String urlId) {
+    public SingleMovieInFavouritesLoader(Context context, String urlId) {
         super(context);
         this.urlId = urlId;
     }

@@ -15,13 +15,13 @@ import org.json.JSONObject;
 import java.net.URL;
 
 
-public class FetchMovieReviews extends AsyncTaskLoader<ReviewBean[]> {
+public class FetchSingleMovieReviews extends AsyncTaskLoader<ReviewBean[]> {
 
-    private String TAG = FetchMovieReviews.class.getSimpleName();
+    private String TAG = FetchSingleMovieReviews.class.getSimpleName();
     private String id;
     private ReviewBean[] mReviewData;
 
-    public FetchMovieReviews(Context context, String id) {
+    public FetchSingleMovieReviews(Context context, String id) {
         super(context);
         this.id = id;
     }

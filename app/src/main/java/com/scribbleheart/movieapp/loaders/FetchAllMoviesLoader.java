@@ -15,26 +15,28 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.scribbleheart.movieapp.data.MovieFavouritesContract.MovieFavouritesEntry.COLUMN_TITLE;
 
 
-public class FetchMoviesLoader extends AsyncTaskLoader<MovieBean[]> {
-    private MovieBean[] mMovieData;
+public class FetchAllMoviesLoader extends AsyncTaskLoader<List<MovieBean>> {
+    private List<MovieBean> mMovieData;
     private String order;
-    private String TAG = FetchMoviesLoader.class.getSimpleName();
+    private String TAG = FetchAllMoviesLoader.class.getSimpleName();
 
-    private FetchMoviesLoader(Context context) {
+    private FetchAllMoviesLoader(Context context) {
         super(context);
     }
 
-    public FetchMoviesLoader(Context context, String order) {
+    public FetchAllMoviesLoader(Context context, String order) {
         this(context);
         this.order = order;
     }
 
     @Override
-    public MovieBean[] loadInBackground() {
+    public List<MovieBean> loadInBackground() {
         if (order.equals(Constants.FAVOURITES)) {
             return getFavouriteMovies();
         } else {
@@ -43,7 +45,7 @@ public class FetchMoviesLoader extends AsyncTaskLoader<MovieBean[]> {
     }
 
     @Nullable
-    private MovieBean[] getMoviesFromNetwork() {
+    private List<MovieBean> getMoviesFromNetwork() {
         URL url = NetworkUtils.buildListOfMoviesUrl(order);
         Log.d(TAG, "Url = " + url);
         String jsonResponse;
@@ -60,10 +62,10 @@ public class FetchMoviesLoader extends AsyncTaskLoader<MovieBean[]> {
         try {
             JSONArray resultsArray = new JSONObject(jsonResponse).getJSONArray("results");
             int length = resultsArray.length();
-            MovieBean[] movies = new MovieBean[length];
+            List<MovieBean> movies = new ArrayList<>();
             for (int i = 0; i< length; i++) {
                 JSONObject result = resultsArray.getJSONObject(i);
-                movies[i] = new MovieBean(result);
+                movies.add(new MovieBean(result));
             }
             return movies;
         } catch (JSONException e) {
@@ -71,18 +73,18 @@ public class FetchMoviesLoader extends AsyncTaskLoader<MovieBean[]> {
         }
     }
 
-    private MovieBean[] getFavouriteMovies() {
+    private List<MovieBean> getFavouriteMovies() {
 
         Uri uri = MovieFavouritesContract.MovieFavouritesEntry.CONTENT_URI;
         Cursor cursor = getContext().getContentResolver().query(uri, null, null, null, COLUMN_TITLE);
 
         int sizeOfDb = cursor.getCount();
-        MovieBean[] movies = new MovieBean[sizeOfDb];
+        List<MovieBean> movies = new ArrayList<>();
         for (int i = 0; i< sizeOfDb; i++) {
             if (!cursor.moveToPosition(i)) {
                 return movies;
             }
-            movies[i] = new MovieBean(cursor);
+            movies.add(new MovieBean(cursor));
         }
 
         cursor.close();
@@ -99,7 +101,7 @@ public class FetchMoviesLoader extends AsyncTaskLoader<MovieBean[]> {
     }
 
     @Override
-    public void deliverResult(MovieBean[] data) {
+    public void deliverResult(List<MovieBean> data) {
         mMovieData = data;
         super.deliverResult(data);
     }

@@ -12,10 +12,12 @@ import android.widget.ImageView;
 import com.scribbleheart.movieapp.utils.MovieBean;
 import com.squareup.picasso.Picasso;
 
+import java.util.List;
+
 
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapterViewHolder> {
 
-    private MovieBean[] mMovies;
+    private List<MovieBean> mMovies;
     private Context context;
     MovieAdapterClickHandler mClickHandler;
 
@@ -24,7 +26,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
         mClickHandler = clickHandler;
     }
 
-    public void setMovies(MovieBean[] movies) {
+    public void setMovies(List<MovieBean> movies) {
         mMovies = movies;
         notifyDataSetChanged();
     }
@@ -40,7 +42,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
 
         @Override
         public void onClick(View view) {
-            MovieBean movie = mMovies[getAdapterPosition()];
+            MovieBean movie = mMovies.get(getAdapterPosition());
             mClickHandler.onClick(movie);
         }
     }
@@ -59,7 +61,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
 
     @Override
     public void onBindViewHolder(MovieAdapterViewHolder holder, int position) {
-        String imageUrl = mMovies[position].getUrl();
+        String imageUrl = mMovies.get(position).getUrl();
         Picasso.with(context)
                 .load(imageUrl)
                 .into(holder.mMovieImage);
@@ -70,7 +72,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
         if (mMovies == null) {
             return 0;
         }
-        return mMovies.length;
+        return mMovies.size();
     }
 
     private String TAG = MovieAdapter.class.getSimpleName();

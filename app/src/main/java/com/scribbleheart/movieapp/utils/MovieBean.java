@@ -36,7 +36,7 @@ public class MovieBean implements Parcelable {
         releaseDate = in.readString();
         url = in.readString();
         urlId = in.readString();
-        dbId = in.readLong();
+        dbId = in.readLong();  // is this being used?
     }
 
     public MovieBean(JSONObject jsonObj) {
@@ -131,13 +131,5 @@ public class MovieBean implements Parcelable {
 
     public long getDbId() {
         return dbId;
-    }
-
-    public boolean dbEntryExists() {
-        // TODO two things could happen. We could create a movie bean from the cursor, or we could get it from the url.
-        // This depends on the entry point, not on the movie.
-        // Thus, we need a select statement?
-        return !(dbId == NO_DB_ENTRY);
-
     }
 }

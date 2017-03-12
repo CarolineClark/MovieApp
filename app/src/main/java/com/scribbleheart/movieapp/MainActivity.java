@@ -2,11 +2,12 @@ package com.scribbleheart.movieapp;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -17,9 +18,11 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.scribbleheart.movieapp.loaders.FetchMoviesLoader;
+import com.scribbleheart.movieapp.loaders.FetchAllMoviesLoader;
 import com.scribbleheart.movieapp.utils.Constants;
 import com.scribbleheart.movieapp.utils.MovieBean;
+
+import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity implements MovieAdapter.MovieAdapterClickHandler {
@@ -32,15 +35,15 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     private GridLayoutManager layoutManager;
     private int FETCH_MOVE_INFO_LOADER_ID = 1;
 
-    private LoaderManager.LoaderCallbacks<MovieBean[]> loaderCallbacks = new LoaderManager.LoaderCallbacks<MovieBean[]>() {
+    private LoaderManager.LoaderCallbacks<List<MovieBean>> loaderCallbacks = new LoaderManager.LoaderCallbacks<List<MovieBean>>() {
 
         @Override
-        public Loader<MovieBean[]> onCreateLoader(int id, Bundle args) {
-            return new FetchMoviesLoader(getApplicationContext(), selectedOrder);
+        public Loader<List<MovieBean>> onCreateLoader(int id, Bundle args) {
+            return new FetchAllMoviesLoader(getApplicationContext(), selectedOrder);
         }
 
         @Override
-        public void onLoadFinished(Loader<MovieBean[]> loader, MovieBean[] data) {
+        public void onLoadFinished(Loader<List<MovieBean>> loader, List<MovieBean>data) {
             mProgressBar.setVisibility(View.INVISIBLE);
             if (data != null) {
                 showMovieDataView();
@@ -52,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         }
 
         @Override
-        public void onLoaderReset(Loader<MovieBean[]> loader) {
+        public void onLoaderReset(Loader<List<MovieBean>> loader) {
 
         }
     };
@@ -73,6 +76,11 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
 
         setInitialSelectedOrder();
         getSupportLoaderManager().initLoader(FETCH_MOVE_INFO_LOADER_ID, null, loaderCallbacks);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
     }
 
     private void setInitialSelectedOrder() {
@@ -116,6 +124,13 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         return super.onOptionsItemSelected(item);
     }
 
+    private void writeToSharedPrefs(String order) {
+        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString("order", order);
+        editor.apply();
+    }
+
     private void restartLoader() {
         invalidateData();
         getSupportLoaderManager().restartLoader(FETCH_MOVE_INFO_LOADER_ID, null, loaderCallbacks);
@@ -129,6 +144,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         if (!selectedOrder.equals(newOrder)) {
             // save order in SharedPreferences
             selectedOrder = newOrder;
+            writeToSharedPrefs(newOrder);
             restartLoader();
         }
     }
@@ -149,6 +165,12 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         Intent intent = new Intent(context, SingleMovieActivity.class);
         intent.putExtra(Constants.MOVIE_JSON_KEY, movieInfo);
         startActivity(intent);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getSupportLoaderManager().restartLoader(FETCH_MOVE_INFO_LOADER_ID, null, loaderCallbacks);
     }
 
     private String TAG = MainActivity.class.getSimpleName();

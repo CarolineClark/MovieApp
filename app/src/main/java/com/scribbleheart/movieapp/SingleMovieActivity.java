@@ -17,9 +17,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.scribbleheart.movieapp.data.MovieFavouritesContract;
-import com.scribbleheart.movieapp.loaders.FavouriteMovieLoader;
-import com.scribbleheart.movieapp.loaders.FetchMovieReviews;
-import com.scribbleheart.movieapp.loaders.FetchMovieTrailers;
+import com.scribbleheart.movieapp.loaders.SingleMovieInFavouritesLoader;
+import com.scribbleheart.movieapp.loaders.FetchSingleMovieReviews;
+import com.scribbleheart.movieapp.loaders.FetchSingleMovieTrailers;
 import com.scribbleheart.movieapp.utils.Constants;
 import com.scribbleheart.movieapp.utils.MovieBean;
 import com.scribbleheart.movieapp.utils.ReviewBean;
@@ -46,7 +46,7 @@ public class SingleMovieActivity extends AppCompatActivity {
 
         @Override
         public Loader<ReviewBean[]> onCreateLoader(int id, Bundle args) {
-            return new FetchMovieReviews(getApplicationContext(), urlId);
+            return new FetchSingleMovieReviews(getApplicationContext(), urlId);
         }
 
         @Override
@@ -72,7 +72,7 @@ public class SingleMovieActivity extends AppCompatActivity {
 
         @Override
         public Loader<Uri[]> onCreateLoader(int id, Bundle args) {
-            return new FetchMovieTrailers(getApplicationContext(), urlId);
+            return new FetchSingleMovieTrailers(getApplicationContext(), urlId);
         }
 
         @Override
@@ -102,12 +102,47 @@ public class SingleMovieActivity extends AppCompatActivity {
     private LoaderManager.LoaderCallbacks<Cursor> dbLoaderCallbacks = new LoaderManager.LoaderCallbacks<Cursor>() {
         @Override
         public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-            return new FavouriteMovieLoader(getApplicationContext(), urlId);
+            return new SingleMovieInFavouritesLoader(getApplicationContext(), urlId);
         }
 
         @Override
-        public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-            mFavouritesCheckBox.setChecked(data.getCount() > 0);
+        public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+            boolean movieInDb = cursor.getCount() > 0;
+            mFavouritesCheckBox.setChecked(movieInDb);
+            final long dbId;
+            if (movieInDb && cursor.moveToNext()) {
+                dbId = cursor.getLong(cursor.getColumnIndex(MovieFavouritesContract.MovieFavouritesEntry._ID));
+            } else {
+                dbId = -1;
+            }
+
+            mFavouritesCheckBox.setOnClickListener(
+                    new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if ( ((CheckBox)view).isChecked() ) {
+                                //insert
+                                ContentValues contentValues = new ContentValues();
+                                // Put the task description and selected mPriority into the ContentValues
+                                contentValues.put(MovieFavouritesContract.MovieFavouritesEntry.COLUMN_TITLE, title);
+                                contentValues.put(MovieFavouritesContract.MovieFavouritesEntry.COLUMN_IMG_URL, imgUrl);
+                                contentValues.put(MovieFavouritesContract.MovieFavouritesEntry.COLUMN_RATING, rating);
+                                contentValues.put(MovieFavouritesContract.MovieFavouritesEntry.COLUMN_DESCRIPTION, description);
+                                contentValues.put(MovieFavouritesContract.MovieFavouritesEntry.COLUMN_POSTER_PATH, posterPath);
+                                contentValues.put(MovieFavouritesContract.MovieFavouritesEntry.COLUMN_RELEASE_DATE, releaseDate);
+                                contentValues.put(MovieFavouritesContract.MovieFavouritesEntry.COLUMN_RELEASE_URL_ID, urlId);
+
+                                Uri uri = MovieFavouritesContract.MovieFavouritesEntry.CONTENT_URI;
+                                getContentResolver().insert(uri, contentValues);
+                            } else {
+                                String stringId = Long.toString(dbId);
+                                Uri uri = MovieFavouritesContract.MovieFavouritesEntry.CONTENT_URI;
+                                uri = uri.buildUpon().appendPath(stringId).build();
+                                getContentResolver().delete(uri, null, null);
+                            }
+                        }
+                    }
+            );
         }
 
         @Override
@@ -115,6 +150,12 @@ public class SingleMovieActivity extends AppCompatActivity {
 
         }
     };
+    private String title;
+    private String description;
+    private String rating;
+    private String releaseDate;
+    private String imgUrl;
+    private String posterPath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -132,41 +173,12 @@ public class SingleMovieActivity extends AppCompatActivity {
 
         MovieBean movieBean = getBeanFromIntent();
         urlId = movieBean.getUrlId();
-        final String title = movieBean.getTitle();
-        final String description = movieBean.getDescription();
-        final String rating = movieBean.getRating();
-        final String releaseDate = movieBean.getReleaseDate();
-        final String posterPath = movieBean.getPosterPath();
-        final String imgUrl = movieBean.getUrl();
-        final long dbId = movieBean.getDbId();
-
-        mFavouritesCheckBox.setOnClickListener(
-            new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if ( ((CheckBox)view).isChecked() ) {
-                        //insert
-                        ContentValues contentValues = new ContentValues();
-                        // Put the task description and selected mPriority into the ContentValues
-                        contentValues.put(MovieFavouritesContract.MovieFavouritesEntry.COLUMN_TITLE, title);
-                        contentValues.put(MovieFavouritesContract.MovieFavouritesEntry.COLUMN_IMG_URL, imgUrl);
-                        contentValues.put(MovieFavouritesContract.MovieFavouritesEntry.COLUMN_RATING, rating);
-                        contentValues.put(MovieFavouritesContract.MovieFavouritesEntry.COLUMN_DESCRIPTION, description);
-                        contentValues.put(MovieFavouritesContract.MovieFavouritesEntry.COLUMN_POSTER_PATH, posterPath);
-                        contentValues.put(MovieFavouritesContract.MovieFavouritesEntry.COLUMN_RELEASE_DATE, releaseDate);
-                        contentValues.put(MovieFavouritesContract.MovieFavouritesEntry.COLUMN_RELEASE_URL_ID, urlId);
-
-                        Uri uri = MovieFavouritesContract.MovieFavouritesEntry.CONTENT_URI;
-                        getContentResolver().insert(uri, contentValues);
-                    } else {
-                        String stringId = Long.toString(dbId);
-                        Uri uri = MovieFavouritesContract.MovieFavouritesEntry.CONTENT_URI;
-                        uri = uri.buildUpon().appendPath(stringId).build();
-                        getContentResolver().delete(uri, null, null);
-                    }
-                }
-           }
-        );
+        title = movieBean.getTitle();
+        description = movieBean.getDescription();
+        rating = movieBean.getRating();
+        releaseDate = movieBean.getReleaseDate();
+        posterPath = movieBean.getPosterPath();
+        imgUrl = movieBean.getUrl();
 
         this.mTitleTv.setText(title);
         mOverviewTv.setText(description);
@@ -176,10 +188,11 @@ public class SingleMovieActivity extends AppCompatActivity {
                 .load(imgUrl)
                 .into(mImageView);
 
+        //TODO: if checkbox is checked, load from the database. Otherwise, load from the internet.
         LoaderManager manager = getSupportLoaderManager();
+        manager.initLoader(LOCAL_DB_LOADER_ID, null, dbLoaderCallbacks);
         manager.initLoader(TRAILER_LOADER_ID, null, trailerLoaderCallbacks);
         manager.initLoader(REVIEW_LOADER_ID, null, reviewLoaderCallbacks);
-        manager.initLoader(LOCAL_DB_LOADER_ID, null, dbLoaderCallbacks);
     }
 
     private MovieBean getBeanFromIntent() {

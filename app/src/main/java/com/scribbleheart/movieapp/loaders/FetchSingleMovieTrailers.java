@@ -14,13 +14,13 @@ import org.json.JSONObject;
 
 import java.net.URL;
 
-public class FetchMovieTrailers extends AsyncTaskLoader<Uri[]> {
+public class FetchSingleMovieTrailers extends AsyncTaskLoader<Uri[]> {
 
-    private static final String TAG = FetchMovieTrailers.class.getSimpleName();
+    private static final String TAG = FetchSingleMovieTrailers.class.getSimpleName();
     private final String id;
     private Uri[] mTrailers;
 
-    public FetchMovieTrailers(Context context, String id) {
+    public FetchSingleMovieTrailers(Context context, String id) {
         super(context);
         this.id = id;
     }

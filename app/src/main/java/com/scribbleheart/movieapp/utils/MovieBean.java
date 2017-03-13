@@ -128,8 +128,4 @@ public class MovieBean implements Parcelable {
     public String getPosterPath() {
         return posterPath;
     }
-
-    public long getDbId() {
-        return dbId;
-    }
 }

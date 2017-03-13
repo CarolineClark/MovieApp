@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.preference.PreferenceManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
@@ -34,6 +35,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     private String selectedOrder;
     private GridLayoutManager layoutManager;
     private int FETCH_MOVE_INFO_LOADER_ID = 1;
+    private final String SHARED_PREFERENCES_ORDER_KEY = "order";
 
     private LoaderManager.LoaderCallbacks<List<MovieBean>> loaderCallbacks = new LoaderManager.LoaderCallbacks<List<MovieBean>>() {
 
@@ -84,7 +86,11 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     }
 
     private void setInitialSelectedOrder() {
-        selectedOrder = Constants.TOP_RATED;
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        selectedOrder = sharedPreferences.getString(
+                SHARED_PREFERENCES_ORDER_KEY,
+                Constants.TOP_RATED
+        );
     }
 
     @Override
@@ -96,8 +102,10 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         MenuItem item;
         if (selectedOrder.equals(Constants.TOP_RATED)) {
             item = menu.findItem(R.id.sort_by_top_rated);
-        } else {
+        } else if (selectedOrder.equals(Constants.POPULAR_ORDER)) {
             item = menu.findItem(R.id.sort_by_popularity);
+        } else {
+            item = menu.findItem(R.id.sort_by_favourites);
         }
 
         item.setChecked(true);
@@ -125,9 +133,9 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     }
 
     private void writeToSharedPrefs(String order) {
-        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString("order", order);
+        editor.putString(SHARED_PREFERENCES_ORDER_KEY, order);
         editor.apply();
     }
 
@@ -142,7 +150,6 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
 
     private void reloadMoviesWithNewOrder(String newOrder) {
         if (!selectedOrder.equals(newOrder)) {
-            // save order in SharedPreferences
             selectedOrder = newOrder;
             writeToSharedPrefs(newOrder);
             restartLoader();
